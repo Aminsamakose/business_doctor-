@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
 import { store } from '@/lib/store';
+import { storeI18n } from '@/lib/i18n';
 
 export default function MonitorPage() {
   const [diagnosis, setDiagnosis] = useState(null);
@@ -13,29 +14,31 @@ export default function MonitorPage() {
   });
 
   useEffect(() => {
-    const savedDiag = store.getDiagnosis();
-    if (!savedDiag) {
-      window.location.href = '/diagnose';
-      return;
-    }
-    setDiagnosis(savedDiag);
+    async function loadAll() {
+      const savedDiag = await store.getDiagnosis();
+      if (!savedDiag) {
+        window.location.href = '/diagnose';
+        return;
+      }
+      setDiagnosis(savedDiag);
 
-    const savedVitals = store.getVitals();
-    if (savedVitals.length === 0) {
-      // Seed with Day 0 data from diagnosis
-      const day0 = {
-        day: 'Day 0',
-        bhs: savedDiag.overallBHS,
-        ...savedDiag.dimensionScores
-      };
-      setHistory([day0]);
-      store.saveVitals([day0]);
-    } else {
-      setHistory(savedVitals);
+      const savedVitals = await store.getVitals();
+      if (savedVitals.length === 0) {
+        const day0 = {
+          day: 'Day 0',
+          bhs: savedDiag.overallBHS,
+          ...savedDiag.dimensionScores
+        };
+        setHistory([day0]);
+        await store.saveVitals([day0]);
+      } else {
+        setHistory(savedVitals);
+      }
     }
+    loadAll();
   }, []);
 
-  const logVitals = () => {
+  const logVitals = async () => {
     const currentBHS = Math.round(Object.values(newVitals).reduce((a, b) => a + b, 0) / 12);
     const newEntry = {
       day: `Day ${history.length * 30}`,
@@ -44,7 +47,7 @@ export default function MonitorPage() {
     };
     const updatedHistory = [...history, newEntry];
     setHistory(updatedHistory);
-    store.saveVitals(updatedHistory);
+    await store.saveVitals(updatedHistory);
     setShowLogForm(false);
   };
 
@@ -55,14 +58,14 @@ export default function MonitorPage() {
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-12">
           <div>
-            <h1 className="text-3xl font-serif font-bold text-blue-900">Vital Signs Monitor</h1>
-            <p className="text-slate-600">Longitudinal Health Tracking: {diagnosis.enterprise}</p>
+            <h1 className="text-3xl font-serif font-bold text-blue-900">{storeI18n.t('monitor.title')}</h1>
+            <p className="text-slate-600">{storeI18n.t('monitor.subtitle')}: {diagnosis.enterprise}</p>
           </div>
           <button
             onClick={() => setShowLogForm(!showLogForm)}
             className="btn-clinical btn-primary"
           >
-            {showLogForm ? 'Cancel' : 'Log New Vitals'}
+            {showLogForm ? 'Cancel' : storeI18n.t('monitor.log_vitals')}
           </button>
         </div>
 
@@ -84,7 +87,7 @@ export default function MonitorPage() {
               ))}
             </div>
             <div className="mt-8 flex justify-end">
-              <button onClick={logVitals} className="btn-clinical btn-primary px-8">Commit to Record</button>
+              <button onClick={logVitals} className="btn-clinical btn-primary px-8">{storeI18n.t('monitor.commit')}</button>
             </div>
           </div>
         )}

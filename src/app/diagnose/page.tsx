@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { store } from '@/lib/store';
 import questionsData from '@/data/questions.json';
+import { storeI18n } from '@/lib/i18n';
 
 export default function DiagnosePage() {
   const [currentDimIndex, setCurrentDimIndex] = useState(0);
@@ -17,10 +18,13 @@ export default function DiagnosePage() {
   const currentDimQuestions = questionsData.questions.filter(q => q.dim === currentDimCode);
 
   useEffect(() => {
-    const saved = store.getDiagnosis();
-    if (saved) {
-      setEnterprise(saved.enterprise);
+    async function loadSaved() {
+      const saved = await store.getDiagnosis();
+      if (saved) {
+        setEnterprise(saved.enterprise);
+      }
     }
+    loadSaved();
   }, []);
 
   const handleAnswer = (qId, val) => {
@@ -51,7 +55,7 @@ export default function DiagnosePage() {
       });
       const data = await res.json();
       setResult(data);
-      store.saveDiagnosis(data);
+      await store.saveDiagnosis(data);
     } catch (e) {
       alert('Error submitting diagnosis');
     } finally {
@@ -109,18 +113,11 @@ export default function DiagnosePage() {
           <div className="mt-12 text-center flex flex-col items-center gap-4">
             <button
               onClick={() => {
-                const data = {
-                  enterprise: result.enterprise,
-                  overallBHS: result.overallBHS,
-                  dimensionScores: result.dimensionScores,
-                  detectedPatterns: result.detectedPatterns
-                };
-                localStorage.setItem('last_diagnosis', JSON.stringify(data));
                 window.location.href = '/prescribe';
               }}
               className="btn-clinical btn-primary px-12 py-4 text-lg shadow-lg"
             >
-              Generate Business Prescription™
+              {storeI18n.t('common.prescribe')}
             </button>
             <button onClick={() => window.location.reload()} className="text-slate-500 font-medium hover:text-slate-800 transition">New Assessment</button>
           </div>
@@ -134,11 +131,11 @@ export default function DiagnosePage() {
       <div className="max-w-3xl mx-auto clinical-card p-12">
         {!enterprise ? (
           <div className="text-center">
-            <h1 className="text-3xl font-serif font-bold text-blue-900 mb-4">Full Business Diagnosis</h1>
-            <p className="text-slate-600 mb la-8">This is the full ABCDT assessment. We will analyze 12 dimensions of your enterprise health.</p>
+            <h1 className="text-3xl font-serif font-bold text-blue-900 mb-4">{storeI18n.t('diagnose.title')}</h1>
+            <p className="text-slate-600 mb-8">{storeI18n.t('diagnose.subtitle')}</p>
             <input
               type="text"
-              placeholder="Enterprise Name"
+              placeholder={storeI18n.t('common.enterprise_name')}
               className="clinical-input mb-6 text-lg"
               value={enterprise}
               onChange={(e) => setEnterprise(e.target.value)}
@@ -148,7 +145,7 @@ export default function DiagnosePage() {
               onClick={() => setEnterprise(enterprise)}
               className="btn-clinical btn-primary w-full text-lg"
             >
-              Enter Diagnostic Suite
+              {storeI18n.t('diagnose.enter_suite')}
             </button>
           </div>
         ) : (
@@ -192,13 +189,13 @@ export default function DiagnosePage() {
                 onClick={prevDimension}
                 className="px-6 py-2 text-slate-500 font-medium disabled:opacity-30 hover:text-slate-800 transition"
               >
-                Previous
+                {storeI18n.t('diagnose.prev')}
               </button>
               <button
                 onClick={nextDimension}
                 className="btn-clinical btn-primary px-8"
               >
-                {currentDimIndex === dimensions.length - 1 ? 'Finish & Calculate' : 'Next Dimension'}
+                {currentDimIndex === dimensions.length - 1 ? storeI18n.t('diagnose.finish') : storeI18n.t('diagnose.next')}
               </button>
             </div>
           </div>
@@ -207,7 +204,7 @@ export default function DiagnosePage() {
         {loading && (
           <div className="text-center py-12">
             <div className="animate-spin h-8 w-8 border-4 border-blue-800 border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p className="font-mono text-sm text-slate-500 uppercase">Running Diagnostic Engine...</p>
+            <p className="font-mono text-sm text-slate-500 uppercase">{storeI18n.t('diagnose.loading')}</p>
           </div>
         )}
       </div>

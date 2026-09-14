@@ -1,0 +1,86 @@
+{
+  "en": {
+    "common": {
+      "welcome": "Welcome to Business Doctor™",
+      "diagnose": "Start Diagnosis",
+      "prescribe": "Get Prescription",
+      "monitor": "Monitor Health",
+      "logout": "Logout",
+      "enterprise_name": "Enterprise Name"
+    },
+    "check": {
+      "title": "Business Health Check",
+      "subtitle": "Enter your enterprise name to begin the diagnostic process.",
+      "start": "Start Assessment",
+      "preliminary": "Preliminary BHS Score",
+      "full_diag": "Go to Full Diagnosis →"
+    },
+    "diagnose": {
+      "title": "Full Business Diagnosis",
+      "subtitle": "This is the full ABCDT assessment. We will analyze 12 dimensions of your enterprise health.",
+      "enter_suite": "Enter Diagnostic Suite",
+      "finish": "Finish & Calculate",
+      "next": "Next Dimension",
+      "prev": "Previous",
+      "loading": "Running Diagnostic Engine..."
+    },
+    "prescribe": {
+      "title": "Prescription Suite",
+      "generate": "Generate AI Prescription",
+      "pending": "Draft - Pending Review",
+      "approved": "APPROVED",
+      "draft": "DRAFT",
+      "gate_title": "Consultant Review Gate",
+      "gate_desc": "Verify the AI prescription before delivering it to the enterprise owner.",
+      "approve_btn": "Mark as Approved"
+    },
+    "monitor": {
+      "title": "Vital Signs Monitor",
+      "subtitle": "Longitudinal Health Tracking",
+      "log_vitals": "Log New Vitals",
+      "commit": "Commit to Record"
+    }
+  },
+  "fr": {
+    "common": {
+      "welcome": "Bienvenue chez Business Doctor™",
+      "diagnose": "Commencer le Diagnostic",
+      "prescribe": "Obtenir l'Ordonnance",
+      "monitor": "Surveiller la Santé",
+      "logout": "Déconnexion",
+      "enterprise_name": "Nom de l'entreprise"
+    },
+    "check": {
+      "title": "Bilan de Santé des Affaires",
+      "subtitle": "Entrez le nom de votre entreprise pour commencer le processus de diagnostic.",
+      "start": "Démarrer l'évaluation",
+      "preliminary": "Score BHS Préliminaire",
+      "full_diag": "Aller au Diagnostic Complet →"
+    },
+    "diagnose": {
+      "title": "Diagnostic d'Entreprise Complet",
+      "subtitle": "Il s'agit de l'évaluation ABCDT complète. Nous analyserons 12 dimensions de la santé de votre entreprise.",
+      "enter_suite": "Entrer dans la Suite de Diagnostic",
+      "finish": "Terminer et Calculer",
+      "next": "Dimension Suivante",
+      "prev": "Précédent",
+      "loading": "Moteur de diagnostic en cours..."
+    },
+    "prescribe": {
+      "title": "Suite de Prescription",
+      "generate": "Générer l'Ordonnance IA",
+      "pending": "Brouillon - En attente de révision",
+      "approved": "APPROUVÉ",
+      "draft": "BROUILLON",
+      "gate_title": "Portail de Révision du Consultant",
+      "gate_desc": "Vérifiez l'ordonnance de l'IA avant de la remettre au propriétaire de l'entreprise.",
+      "approve_btn": "Marquer comme approuvé"
+    },
+    "monitor": {
+      "title": "Moniteur des Signes Vitaux",
+      "subtitle": "Suivi Longitudinal de la Santé",
+      "log_vitals": "Enregistrer de nouveaux signes vitaux",
+      "commit": "Valider l'enregistrement"
+    }
+  }
+}

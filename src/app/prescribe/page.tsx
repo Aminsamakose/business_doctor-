@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { store } from '@/lib/store';
+import { storeI18n } from '@/lib/i18n';
 
 export default function PrescribePage() {
   const [diagnosis, setDiagnosis] = useState(null);
@@ -10,12 +11,15 @@ export default function PrescribePage() {
   const [isApproved, setIsApproved] = useState(false);
 
   useEffect(() => {
-    const data = store.getDiagnosis();
-    if (!data) {
-      window.location.href = '/diagnose';
-    } else {
-      setDiagnosis(data);
+    async function loadData() {
+      const data = await store.getDiagnosis();
+      if (!data) {
+        window.location.href = '/diagnose';
+      } else {
+        setDiagnosis(data);
+      }
     }
+    loadData();
   }, []);
 
   const generatePrescription = async () => {
@@ -51,7 +55,7 @@ export default function PrescribePage() {
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-serif font-bold text-blue-900">Prescription Suite</h1>
+            <h1 className="text-3xl font-serif font-bold text-blue-900">{storeI18n.t('prescribe.title')}</h1>
             <p className="text-slate-600">Enterprise: {diagnosis.enterprise}</p>
           </div>
           <button
@@ -59,14 +63,14 @@ export default function PrescribePage() {
             disabled={loading}
             className="btn-clinical btn-primary"
           >
-            {loading ? 'Generating...' : 'Generate AI Prescription'}
+            {loading ? 'Generating...' : storeI18n.t('prescribe.generate')}
           </button>
         </div>
 
         <div className="bg-white border border-slate-300 shadow-sm min-h-[600px] p-12 relative">
           {!isApproved && prescription && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 opacity-10">
-              <span className="text-6xl font-bold text-red-600 rotate-45 uppercase">Draft - Pending Review</span>
+              <span className="text-6xl font-bold text-red-600 rotate-45 uppercase">{storeI18n.t('prescribe.pending')}</span>
             </div>
           )}
 
@@ -88,7 +92,7 @@ export default function PrescribePage() {
                 </div>
                 <div className="text-right">
                   <span className="text-xs font-mono text-slate-500 block uppercase">Issued: {new Date().toLocaleDateString()}</span>
-                  <span className="text-xs font-mono text-slate-500 block uppercase">Status: {isApproved ? 'APPROVED' : 'DRAFT'}</span>
+                  <span className="text-xs font-mono text-slate-500 block uppercase">Status: {isApproved ? storeI18n.t('prescribe.approved') : storeI18n.t('prescribe.draft')}</span>
                 </div>
               </div>
 
@@ -102,14 +106,14 @@ export default function PrescribePage() {
         {prescription && (
           <div className="mt-8 p-6 clinical-card flex items-center justify-between shadow-sm">
             <div>
-              <h3 className="font-bold text-slate-800">Consultant Review Gate</h3>
-              <p className="text-sm text-slate-500">Verify the AI prescription before delivering it to the enterprise owner.</p>
+              <h3 className="font-bold text-slate-800">{storeI18n.t('prescribe.gate_title')}</h3>
+              <p className="text-sm text-slate-500">{storeI18n.t('prescribe.gate_desc')}</p>
             </div>
             <button
               onClick={() => setIsApproved(!isApproved)}
               className={`px-6 py-2 rounded font-bold transition ${isApproved ? 'bg-green-600 text-white' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}`}
             >
-              {isApproved ? '✓ Approved' : 'Mark as Approved'}
+              {isApproved ? '✓ Approved' : storeI18n.t('prescribe.approve_btn')}
             </button>
           </div>
         )}

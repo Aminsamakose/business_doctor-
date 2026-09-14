@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { store } from '@/lib/store';
+import { storeI18n } from '@/lib/i18n';
 
 const QUESTIONS = [
   { id: 'q1', text: 'Does your enterprise have a documented strategy for absorbing financial shocks?', options: [{ text: 'Yes, fully documented', val: 10 }, { text: 'Partially', val: 5 }, { text: 'No', val: 0 }] },
@@ -36,11 +37,10 @@ export default function HealthCheckPage() {
       const data = await res.json();
       setResult(data);
 
-      // Persistence: save as a preliminary diagnosis
-      store.saveDiagnosis({
+      await store.saveDiagnosis({
         enterprise: data.enterprise,
         overallBHS: data.bhs,
-        dimensionScores: { 'General': data.bhs }, // Simplified for free check
+        dimensionScores: { 'General': data.bhs },
         detectedPatterns: []
       });
     } catch (e) {
@@ -54,11 +54,11 @@ export default function HealthCheckPage() {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
         <div className="max-w-md w-full bg-white border-2 border-blue-800 p-8 shadow-2xl text-center">
-          <span className="text-xs font-mono uppercase text-slate-500 tracking-widest">Preliminary BHS Score</span>
+          <span className="text-xs font-mono uppercase text-slate-500 tracking-widest">{storeI18n.t('check.preliminary')}</span>
           <div className="text-7xl font-bold text-blue-800 my-6 font-mono">{result.bhs}%</div>
           <p className="text-xl font-medium text-slate-700 mb-8">{result.message}</p>
           <div className="flex flex-col gap-3">
-            <button onClick={() => window.location.href = '/diagnose'} className="btn-clinical btn-primary w-full">Go to Full Diagnosis →</button>
+            <button onClick={() => window.location.href = '/diagnose'} className="btn-clinical btn-primary w-full">{storeI18n.t('check.full_diag')}</button>
             <button onClick={() => window.location.reload()} className="btn-clinical btn-secondary w-full">Restart Check</button>
           </div>
         </div>
@@ -71,11 +71,11 @@ export default function HealthCheckPage() {
       <div className="max-w-2xl w-full clinical-card p-12">
         {step === 0 && (
           <div className="text-center">
-            <h1 className="text-3xl font-serif font-bold text-blue-900 mb-4">Business Health Check</h1>
-            <p className="text-slate-600 mb la-8">Enter your enterprise name to begin the diagnostic process.</p>
+            <h1 className="text-3xl font-serif font-bold text-blue-900 mb-4">{storeI18n.t('check.title')}</h1>
+            <p className="text-slate-600 mb-8">{storeI18n.t('check.subtitle')}</p>
             <input
               type="text"
-              placeholder="Enterprise Name"
+              placeholder={storeI18n.t('common.enterprise_name')}
               className="clinical-input mb-6 text-lg"
               value={enterprise}
               onChange={(e) => setEnterprise(e.target.value)}
@@ -85,7 +85,7 @@ export default function HealthCheckPage() {
               onClick={() => setStep(1)}
               className="btn-clinical btn-primary w-full text-lg"
             >
-              Start Assessment
+              {storeI18n.t('check.start')}
             </button>
           </div>
         )}
