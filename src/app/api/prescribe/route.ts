@@ -45,7 +45,7 @@ Generate the full 8-component Business Prescription™ now.`;
     });
 
     const prescriptionText = response.content[0].type === 'text'
-      ? (response.content[0] as any).text
+      ? response.content[0].text
       : 'Error generating prescription text';
 
     return NextResponse.json({

@@ -1,0 +1,355 @@
+// Samakose canonical model (MVP subset). See docs/architecture/DATA_MODEL.md.
+// Every tenant-owned table carries tenantId; repositories must always filter by it.
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  BUSINESS_OWNER
+  CEO
+  COACH
+  CONSULTANT
+  PROGRAMME_MANAGER
+  PARTNER
+  DONOR
+  EXPERT
+  ADMINISTRATOR
+}
+enum EvidenceLevel {
+  VERIFIED
+  EXPERT_VALIDATED
+  DOCUMENT_SUPPORTED
+  SELF_REPORTED
+  INFERRED
+  UNVERIFIED
+  MISSING
+}
+enum CaseState {
+  NEW
+  DIAGNOSTIC
+  DIAGNOSED
+  PRESCRIBED
+  PENDING_APPROVAL
+  IN_EXECUTION
+  COACHING
+  MONITORING
+  AT_RISK
+  STALLED
+  MIDLINE
+  ENDLINE
+  FOLLOW_UP
+  GRADUATED
+  RE_ENTRY
+  CLOSED
+}
+enum ReviewStatus {
+  PENDING_REVIEW
+  APPROVED
+  EDITED
+  REJECTED
+  DEFERRED
+  OVERRIDDEN
+}
+enum OutcomeStatus {
+  REPORTED
+  EVIDENCE_REQUESTED
+  EVIDENCE_SUBMITTED
+  UNDER_REVIEW
+  VERIFIED
+  REJECTED
+  INSUFFICIENT_EVIDENCE
+}
+enum IssueStatus {
+  OPEN
+  UNDER_REVIEW
+  CORRECTED
+  ACCEPTED
+  EXCLUDED
+  CLOSED
+}
+enum ActionStatus {
+  OPEN
+  DONE
+  BLOCKED
+}
+
+model Tenant {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  users     Membership[]
+  organisations Organisation[]
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  memberships Membership[]
+}
+
+model Membership {
+  id       String @id @default(cuid())
+  tenantId String
+  userId   String
+  role     Role
+  tenant   Tenant @relation(fields: [tenantId], references: [id])
+  user     User   @relation(fields: [userId], references: [id])
+  @@unique([tenantId, userId])
+}
+
+model Organisation {
+  id        String   @id @default(cuid())
+  tenantId  String
+  name      String
+  profile   Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String
+  updatedBy String
+  status    String   @default("ACTIVE")
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  cases     Case[]
+  @@index([tenantId])
+}
+
+model Case {
+  id             String    @id @default(cuid())
+  tenantId       String
+  organisationId String
+  state          CaseState @default(NEW)
+  coachUserId    String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  createdBy      String
+  updatedBy      String
+  organisation   Organisation @relation(fields: [organisationId], references: [id])
+  transitions    CaseTransition[]
+  scores         HealthScore[]
+  evidence       Evidence[]
+  recommendations AiRecommendation[]
+  actions        Action[]
+  kpiReadings    KpiReading[]
+  outcomes       Outcome[]
+  issues         DataQualityIssue[]
+  @@index([tenantId, state])
+}
+
+model CaseTransition {
+  id        String    @id @default(cuid())
+  tenantId  String
+  caseId    String
+  fromState CaseState
+  toState   CaseState
+  trigger   String
+  actorKind String
+  actorId   String
+  createdAt DateTime  @default(now())
+  case      Case      @relation(fields: [caseId], references: [id])
+  @@index([tenantId, caseId])
+}
+
+// Immutable once published: a change creates a new version.
+model ScoringVersion {
+  id        String   @id @default(cuid())
+  configId  String
+  version   String
+  status    String
+  config    Json
+  createdAt DateTime @default(now())
+  createdBy String
+  scores    HealthScore[]
+  @@unique([configId, version])
+}
+
+// Append-only snapshot; embeds inputs + formula so history is explainable.
+model HealthScore {
+  id               String   @id @default(cuid())
+  tenantId         String
+  caseId           String
+  scoringVersionId String
+  overall          Float?
+  coverage         Float
+  maturityLevel    Int?
+  dimensions       Json
+  inputs           Json
+  formula          String
+  computedAt       DateTime
+  case             Case     @relation(fields: [caseId], references: [id])
+  scoringVersion   ScoringVersion @relation(fields: [scoringVersionId], references: [id])
+  @@index([tenantId, caseId, computedAt])
+}
+
+model Evidence {
+  id        String        @id @default(cuid())
+  tenantId  String
+  caseId    String
+  claim     String
+  level     EvidenceLevel
+  source    String
+  ownerId   String
+  documentRef String?
+  verifiedBy  String?
+  recordedAt  DateTime    @default(now())
+  case      Case          @relation(fields: [caseId], references: [id])
+  @@index([tenantId, caseId])
+}
+
+// AI interpretation, kept apart from facts and from human decisions.
+model AiRecommendation {
+  id             String       @id @default(cuid())
+  tenantId       String
+  organisationId String
+  caseId         String
+  requestId      String
+  agent          String
+  task           String
+  model          String
+  modelVersion   String
+  promptVersion  String
+  scoringVersion String?
+  knowledgeSources Json
+  evidenceRefs   Json
+  confidence     String
+  reviewRequired Boolean
+  safetyTopics   Json
+  output         Json
+  status         ReviewStatus @default(PENDING_REVIEW)
+  createdAt      DateTime     @default(now())
+  case           Case         @relation(fields: [caseId], references: [id])
+  approvals      Approval[]
+  @@index([tenantId, caseId])
+}
+
+// Human decision: authoritative record, with the AI snapshot preserved beside it.
+model Approval {
+  id               String       @id @default(cuid())
+  tenantId         String
+  recommendationId String
+  action           ReviewStatus
+  reason           String
+  decidedBy        String
+  decidedAt        DateTime     @default(now())
+  finalDecision    Json?
+  aiSnapshot       Json
+  recommendation   AiRecommendation @relation(fields: [recommendationId], references: [id])
+  @@index([tenantId, recommendationId])
+}
+
+model Action {
+  id        String       @id @default(cuid())
+  tenantId  String
+  caseId    String
+  title     String
+  ownerId   String?
+  deadline  DateTime?
+  status    ActionStatus @default(OPEN)
+  blockedBy Json?
+  case      Case         @relation(fields: [caseId], references: [id])
+  @@index([tenantId, caseId])
+}
+
+model KpiReading {
+  id       String   @id @default(cuid())
+  tenantId String
+  caseId   String
+  kpi      String
+  value    Float
+  baseline Float?
+  target   Float?
+  readAt   DateTime @default(now())
+  case     Case     @relation(fields: [caseId], references: [id])
+  @@index([tenantId, caseId, kpi])
+}
+
+model Outcome {
+  id          String        @id @default(cuid())
+  tenantId    String
+  caseId      String
+  description String
+  status      OutcomeStatus @default(REPORTED)
+  evidenceRefs Json
+  verifiedBy  String?
+  attribution String        @default("NOT_ASSESSED")
+  case        Case          @relation(fields: [caseId], references: [id])
+  @@index([tenantId, caseId])
+}
+
+model DataQualityIssue {
+  id        String      @id @default(cuid())
+  tenantId  String
+  caseId    String
+  source    String
+  problem   String
+  severity  String
+  impact    String
+  recommendedFix String
+  ownerId   String?
+  status    IssueStatus @default(OPEN)
+  preserved Json?
+  case      Case        @relation(fields: [caseId], references: [id])
+  @@index([tenantId, caseId, status])
+}
+
+model DomainEvent {
+  id             String   @id @default(cuid())
+  tenantId       String
+  type           String
+  idempotencyKey String
+  payload        Json
+  createdAt      DateTime @default(now())
+  @@unique([tenantId, type, idempotencyKey])
+}
+
+// Append-only, hash-chained. The application role should have INSERT/SELECT only.
+model AuditEvent {
+  id        String   @id @default(cuid())
+  tenantId  String
+  seq       Int
+  who       String
+  what      String
+  entity    String
+  before    Json?
+  after     Json?
+  why       String?
+  source    String
+  approval  String?
+  prevHash  String
+  hash      String
+  createdAt DateTime @default(now())
+  @@unique([tenantId, seq])
+}
+
+model KnowledgeAsset {
+  id            String   @id @default(cuid())
+  title         String
+  type          String
+  owner         String
+  version       String
+  status        String
+  source        String
+  effectiveDate DateTime
+  reviewDate    DateTime?
+  accessPolicy  String
+  content       String
+  @@unique([id, version])
+}
+
+// Proposed lessons only become knowledge after review.
+model LearningRecord {
+  id        String   @id @default(cuid())
+  tenantId  String
+  caseId    String
+  lesson    String
+  status    String   @default("PROPOSED")
+  reviewedBy String?
+  createdAt DateTime @default(now())
+  @@index([tenantId])
+}

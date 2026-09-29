@@ -7,9 +7,9 @@ import { storeI18n } from '@/lib/i18n';
 
 export default function DiagnosePage() {
   const [currentDimIndex, setCurrentDimIndex] = useState(0);
-  const [responses, setResponses] = useState({});
+  const [responses, setResponses] = useState<Record<string, number>>({});
   const [enterprise, setEnterprise] = useState('');
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState<{ overallBHS: number; enterprise: string; dimensionScores: Record<string, number>; detectedPatterns: { code: string; name: string; risk: string; description: string }[] } | null>(null);
   const [loading, setLoading] = useState(false);
 
   const dimensions = Object.entries(questionsData.dimensions);
@@ -27,7 +27,7 @@ export default function DiagnosePage() {
     loadSaved();
   }, []);
 
-  const handleAnswer = (qId, val) => {
+  const handleAnswer = (qId: string, val: number) => {
     setResponses(prev => ({ ...prev, [qId]: val }));
   };
 
@@ -83,7 +83,7 @@ export default function DiagnosePage() {
                     <span className="w-12 font-mono text-sm text-slate-500">{dim}</span>
                     <div className="flex-1 h-3 bg-slate-100 rounded-full overflow-hidden">
                       <div className="h-full bg-blue-600 transition-all" style={{ width: `${score}%` }}></div>
-                    </div}
+                    </div>
                     <span className="w-12 text-right font-mono text-sm font-bold">{score}%</span>
                   </div>
                 ))}

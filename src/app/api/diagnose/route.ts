@@ -12,7 +12,6 @@ export async function POST(request: Request) {
 
     const dimensionScores: Record<string, { score: number, max: number }> = {};
     const totalWeightedScore = 0;
-    let overallMax = 0;
 
     // 1. Calculate Dimensional Scores
     questionsData.questions.forEach(q => {

@@ -12,12 +12,12 @@ const QUESTIONS = [
 
 export default function HealthCheckPage() {
   const [step, setStep] = useState(0);
-  const [responses, setResponses] = useState({});
+  const [responses, setResponses] = useState<Record<string, number>>({});
   const [enterprise, setEnterprise] = useState('');
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState<{ bhs: number; message: string } | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleAnswer = (qId, val) => {
+  const handleAnswer = (qId: string, val: number) => {
     setResponses(prev => ({ ...prev, [qId]: val }));
     if (step < QUESTIONS.length - 1) {
       setStep(step + 1);

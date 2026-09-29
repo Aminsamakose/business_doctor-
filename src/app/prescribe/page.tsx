@@ -5,7 +5,7 @@ import { store } from '@/lib/store';
 import { storeI18n } from '@/lib/i18n';
 
 export default function PrescribePage() {
-  const [diagnosis, setDiagnosis] = useState(null);
+  const [diagnosis, setDiagnosis] = useState<Awaited<ReturnType<typeof store.getDiagnosis>>>(null);
   const [prescription, setPrescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [isApproved, setIsApproved] = useState(false);
@@ -23,6 +23,7 @@ export default function PrescribePage() {
   }, []);
 
   const generatePrescription = async () => {
+    if (!diagnosis) return;
     setLoading(true);
     try {
       const res = await fetch('/api/prescribe', {

@@ -7,7 +7,7 @@ import { store } from '@/lib/store';
 export default function AdminDashboard() {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
-  const [enterprises, setEnterprises] = useState([]);
+  const [enterprises, setEnterprises] = useState<Awaited<ReturnType<typeof store.getAllEnterprises>>>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

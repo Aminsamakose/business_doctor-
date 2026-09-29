@@ -34,3 +34,14 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Samakose AI core
+
+Domain logic lives in `src/core` (scoring, evidence, case state machine, rules, AI orchestration, audit, events, RBAC). See `docs/architecture/IMPLEMENTATION_PLAN.md`.
+
+```bash
+npm test          # unit, AI evaluation gate, journey integration
+npm run typecheck
+npm run db:validate
+```
+Copy `.env.example` to `.env.local`. `ANTHROPIC_API_KEY` and `ANTHROPIC_MODEL` are server-only.

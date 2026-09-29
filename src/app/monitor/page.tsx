@@ -6,8 +6,8 @@ import { store } from '@/lib/store';
 import { storeI18n } from '@/lib/i18n';
 
 export default function MonitorPage() {
-  const [diagnosis, setDiagnosis] = useState(null);
-  const [history, setHistory] = useState([]);
+  const [diagnosis, setDiagnosis] = useState<Awaited<ReturnType<typeof store.getDiagnosis>>>(null);
+  const [history, setHistory] = useState<Awaited<ReturnType<typeof store.getVitals>>>([]);
   const [showLogForm, setShowLogForm] = useState(false);
   const [newVitals, setNewVitals] = useState({
     D1: 50, D2: 50, D3: 50, D4: 50, D5: 50, D6: 50, D7: 50, D8: 50, D9: 50, D10: 50, D11: 50, D12: 50
